@@ -50,7 +50,7 @@ public class OrderServiceImpl implements OrderService {
     @Transactional(readOnly = true)
     public OrderResponse getOrderById(Long orderId) {
         Order order = orderRepository.findById(orderId)
-                .orElseThrow(() -> new RuntimeException("Order not found"));
+                .orElseThrow(() -> new com.example.orderprocessingsystem.exception.OrderNotFoundException("Order not found with id: " + orderId));
         return mapToOrderResponse(order);
     }
 
@@ -72,9 +72,9 @@ public class OrderServiceImpl implements OrderService {
     @Transactional
     public OrderResponse updateOrderStatus(Long orderId, OrderStatus status) {
         Order order = orderRepository.findById(orderId)
-                .orElseThrow(() -> new RuntimeException("Order not found"));
+                .orElseThrow(() -> new com.example.orderprocessingsystem.exception.OrderNotFoundException("Order not found with id: " + orderId));
         if (order.getStatus() == OrderStatus.CANCELED || order.getStatus() == OrderStatus.DELIVERED) {
-            throw new RuntimeException("Cannot update status for canceled or delivered orders");
+            throw new com.example.orderprocessingsystem.exception.OrderStatusException("Cannot update status for canceled or delivered orders");
         }
         order.setStatus(status);
         order.setUpdatedAt(LocalDateTime.now());
@@ -86,9 +86,9 @@ public class OrderServiceImpl implements OrderService {
     @Transactional
     public OrderResponse cancelOrder(Long orderId) {
         Order order = orderRepository.findById(orderId)
-                .orElseThrow(() -> new RuntimeException("Order not found"));
+                .orElseThrow(() -> new com.example.orderprocessingsystem.exception.OrderNotFoundException("Order not found with id: " + orderId));
         if (order.getStatus() != OrderStatus.PENDING) {
-            throw new RuntimeException("Only PENDING orders can be canceled");
+            throw new com.example.orderprocessingsystem.exception.OrderStatusException("Only PENDING orders can be canceled");
         }
         order.setStatus(OrderStatus.CANCELED);
         order.setUpdatedAt(LocalDateTime.now());
